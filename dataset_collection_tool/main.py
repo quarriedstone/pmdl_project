@@ -36,8 +36,8 @@ class FullScreenApp:
         self.look_at_me.place(x=self.target_x, y=self.target_y, width=150, height=150)
 
     def iteration(self, event):
+        global cap
         timestamp = time.time_ns()
-        cap = cv2.VideoCapture(0)
         _, frame = cap.read()
         cv2.imwrite("img-{}.png".format(timestamp), frame)
         with open(self.annotation_file, "a") as f:
@@ -64,7 +64,7 @@ def get_args():
 
     return parser.parse_args()
 
-
+cap = cv2.VideoCapture(0)
 def main():
     args = get_args()
     root = tk.Tk()

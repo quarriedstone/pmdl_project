@@ -6,8 +6,8 @@ import cv2
 
 
 def gen_xy(master):
-    x = random.uniform(0, master.winfo_screenwidth())
-    y = random.uniform(0, master.winfo_screenheight())
+    x = random.uniform(0, master.winfo_screenwidth() - 150)
+    y = random.uniform(0, master.winfo_screenheight() - 150)
     return (x, y)
 
 
@@ -40,11 +40,11 @@ class FullScreenApp:
         cap = cv2.VideoCapture(0)
         _, frame = cap.read()
         cv2.imwrite("img-{}.png".format(timestamp), frame)
-        with open(self.annotation_file, "w") as f:
+        with open(self.annotation_file, "a") as f:
             f.write("{}\t{}\t{}\n".format(
                 timestamp,
-                self.target_x - self.master.winfo_screenwidth() / 2,
-                self.target_y - self.master.winfo_screenheight() / 2)
+                self.target_x - self.master.winfo_screenwidth() / 2 + 75,
+                self.target_y - self.master.winfo_screenheight() / 2 + 75)
             )
         self.move_target()
 

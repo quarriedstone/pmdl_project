@@ -77,12 +77,12 @@ class Face:
             dist_coeffs
         )
 
-        for p in image_points:
-            cv2.circle(self.frame, (int(p[0]), int(p[1])), 3, (255), -1)
+        # for p in image_points:
+        #     cv2.circle(self.frame, (int(p[0]), int(p[1])), 3, (255), -1)
 
         p1 = (int(image_points[0][0]), int(image_points[0][1]))
         p2 = (int(nose_end_point2D[0][0][0]), int(nose_end_point2D[0][0][1]))
-        print(translation_vector)
+        # print(translation_vector)
         cv2.line(self.frame, p1, p2, (255), 2)
 
         return rotation_vector, translation_vector

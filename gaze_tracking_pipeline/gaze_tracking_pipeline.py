@@ -5,7 +5,7 @@ import dlib
 import numpy as np
 
 import face
-
+import time
 kernel = np.ones((3, 3), np.uint8)
 detector = dlib.get_frontal_face_detector()
 
@@ -16,10 +16,10 @@ def process_frame(frame):
     faces = detector(frame)
     face1 = face.Face(faces[0], frame)
     frame = face1.frame
-    eye_center = face1.left_eye.center + face1.left_eye.eye_origin
-    frame[eye_center[1], eye_center[0]] = 255
-    eye_center = face1.right_eye.center + face1.right_eye.eye_origin
-    frame[eye_center[1], eye_center[0]] = 255
+    eye_center = (face1.left_eye.center / face1.left_eye.scale + face1.left_eye.eye_origin)
+    frame[int(eye_center[1]), int(eye_center[0])] = 255
+    eye_center = face1.right_eye.center / face1.right_eye.scale + face1.right_eye.eye_origin
+    frame[int(eye_center[1]), int(eye_center[0])] = 255
     return frame
 
 
@@ -32,7 +32,9 @@ def video_demo(save_to, show):
             break
 
         try:
+            t = time.time()
             frame = process_frame(frame)
+            print('time: ', time.time()-t)
         except:
             continue
 
@@ -82,7 +84,8 @@ def get_args():
 
     return parser.parse_args()
 
-
+DEBUG = 0
+SCALE = 2
 def main():
     args = get_args()
     print(args)

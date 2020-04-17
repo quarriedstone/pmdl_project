@@ -20,7 +20,7 @@ def process_frame(frame):
     frame[int(eye_center[1]), int(eye_center[0])] = 255
     eye_center = face1.right_eye.center / face1.right_eye.scale + face1.right_eye.eye_origin
     frame[int(eye_center[1]), int(eye_center[0])] = 255
-    return frame
+    return frame, face1
 
 
 def video_demo(save_to, show):
@@ -33,7 +33,7 @@ def video_demo(save_to, show):
 
         try:
             t = time.time()
-            frame = process_frame(frame)
+            frame, _ = process_frame(frame)
             print('time: ', time.time()-t)
         except:
             continue
@@ -52,7 +52,7 @@ def photo_demo(photo_filename, save_to, show):
         _, frame = cap.read()
 
     try:
-        frame = process_frame(frame)
+        frame, _ = process_frame(frame)
     except Exception as e:
         print("Exception occured during frame processing :(")
         exit(1)
@@ -99,3 +99,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+def gaze_api(frame):
+    frame, face = process_frame(frame)
+    return face, frame

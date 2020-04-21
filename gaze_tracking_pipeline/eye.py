@@ -35,7 +35,8 @@ def _extract_eye_points(landmarks):
 
 
 class Eye:
-	def __init__(self, landmarks, frame):
+	def __init__(self, landmarks, frame, side):
+		self.side = side
 		self.frame = frame
 		self.scale = 1
 		self.eye_points = self._extract_eye_points(landmarks)
@@ -45,14 +46,14 @@ class Eye:
 		self.mask = self._make_mask()
 		left, right = self._generate_masked_gradient()
 		self.iris = Iris(left, right, self.eye_region, self.mask)
-		self.eye_corners = self._extract_eye_corners()
+		self.eye_corner, self.eye_width = self._extract_eye_corners()
 		self.center = np.array(self._calculate_center())
 		self.relative_center = self._calculate_relative_center()
 
 	def _calculate_relative_center(self):
-		local_corners = np.array(self.eye_corners) * self.scale
-		geometric_center = local_corners[0] + (local_corners[1] - local_corners[0]) / 2
-		result = geometric_center - self.center
+		corner = np.array(self.eye_corner) * self.scale
+		result = (corner - self.center)
+		result[0] = result[0]/self.eye_width
 		return result
 
 	def _calculate_center(self):
@@ -88,9 +89,16 @@ class Eye:
 		return center
 
 	def _extract_eye_corners(self):
-		left_corner = self.eye_points[np.where(self.eye_points[:, 0] == min(self.eye_points[:, 0]))].squeeze()
-		right_corner = self.eye_points[np.where(self.eye_points[:, 0] == max(self.eye_points[:, 0]))].squeeze()
-		return (left_corner, right_corner)
+		corner_l = self.eye_points[np.where(self.eye_points[:, 0] == min(self.eye_points[:, 0]))].squeeze()
+		corner_r = self.eye_points[np.where(self.eye_points[:, 0] == max(self.eye_points[:, 0]))].squeeze()
+
+		if self.side == 'right':
+			corner = corner_l
+		if self.side == 'left':
+			corner = corner_r
+
+		coef = corner_r[0] - corner_l[0]
+		return corner, coef
 
 	def _extract_eye_points(self, landmarks):
 		eye_points = chaikins_corner_cutting(landmarks).astype(int)

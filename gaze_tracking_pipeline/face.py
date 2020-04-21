@@ -25,8 +25,8 @@ class Face:
         eye1 = np.array([[self.landmarks.part(mark).x, self.landmarks.part(mark).y] for mark in range(36, 42)])
         eye2 = np.array([[self.landmarks.part(mark).x, self.landmarks.part(mark).y] for mark in range(42, 48)])
 
-        self.left_eye = Eye(eye1, self.frame)
-        self.right_eye = Eye(eye2, self.frame)
+        self.left_eye = Eye(eye1, self.frame, 'left')
+        self.right_eye = Eye(eye2, self.frame, 'right')
 
     def posit_predict(self):
         landmarks = self.landmarks

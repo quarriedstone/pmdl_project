@@ -20,6 +20,9 @@ def process_frame(frame):
     frame[int(eye_center[1]), int(eye_center[0])] = 255
     eye_center = face1.right_eye.center / face1.right_eye.scale + face1.right_eye.eye_origin
     frame[int(eye_center[1]), int(eye_center[0])] = 255
+    p1 = tuple(face1.left_eye.eye_corners[1] + face1.left_eye.eye_origin)
+    p2 = tuple(face1.left_eye.eye_corners[0] + face1.left_eye.eye_origin)
+    print(face1.left_eye.relative_center)
     return frame, face1
 
 
@@ -34,7 +37,7 @@ def video_demo(save_to, show):
         try:
             t = time.time()
             frame, _ = process_frame(frame)
-            print('time: ', time.time()-t)
+            # print('time: ', time.time()-t)
         except:
             continue
 

@@ -8,30 +8,31 @@ from functools import reduce
 from iris import Iris
 
 DEBUG = 0
-SCALE = 2   
+SCALE = 2
 def order_points(coords):
-    center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), coords), [len(coords)] * 2))
-    return (sorted(coords, key=lambda coord: (-135 - math.degrees(
-        math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360))
+	center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), coords), [len(coords)] * 2))
+	return (sorted(coords, key=lambda coord: (-135 - math.degrees(
+		math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360))
 
 
 def chaikins_corner_cutting(coords, refinements=3):
-    coords = np.array(coords)
-    for _ in range(refinements):
-        L = coords.repeat(2, axis=0)
-        R = np.empty_like(L)
-        R[0] = L[0]
-        R[2::2] = L[1:-1:2]
-        R[1:-1:2] = L[2::2]
-        R[-1] = L[-1]
-        coords = L * 0.75 + R * 0.25
-    return coords
+	coords = np.array(coords)
+	for _ in range(refinements):
+		L = coords.repeat(2, axis=0)
+		R = np.empty_like(L)
+		R[0] = L[0]
+		R[2::2] = L[1:-1:2]
+		R[1:-1:2] = L[2::2]
+		R[-1] = L[-1]
+		coords = L * 0.75 + R * 0.25
+	return coords
 
 
 def _extract_eye_points(landmarks):
-    eye_points = chaikins_corner_cutting(landmarks).astype(int)
-    eye_points = np.array(order_points(eye_points[np.unique(eye_points[:, 0], return_index=True, axis=0)[1]]))
-    return eye_points
+	eye_points = chaikins_corner_cutting(landmarks).astype(int)
+	eye_points = np.array(order_points(eye_points[np.unique(eye_points[:, 0], return_index=True, axis=0)[1]]))
+	return eye_points
+
 
 class Eye:
 	def __init__(self, landmarks, frame):
@@ -46,7 +47,13 @@ class Eye:
 		self.iris = Iris(left, right, self.eye_region, self.mask)
 		self.eye_corners = self._extract_eye_corners()
 		self.center = np.array(self._calculate_center())
-		# print(R)
+		self.relative_center = self._calculate_relative_center()
+
+	def _calculate_relative_center(self):
+		local_corners = np.array(self.eye_corners) * self.scale
+		geometric_center = local_corners[0] + (local_corners[1] - local_corners[0]) / 2
+		result = geometric_center - self.center
+		return result
 
 	def _calculate_center(self):
 		global R
@@ -81,8 +88,8 @@ class Eye:
 		return center
 
 	def _extract_eye_corners(self):
-		left_corner = self.eye_points[np.where(self.eye_points == min(self.eye_points[:, 0]))]
-		right_corner = self.eye_points[np.where(self.eye_points == max(self.eye_points[:, 0]))]
+		left_corner = self.eye_points[np.where(self.eye_points[:, 0] == min(self.eye_points[:, 0]))].squeeze()
+		right_corner = self.eye_points[np.where(self.eye_points[:, 0] == max(self.eye_points[:, 0]))].squeeze()
 		return (left_corner, right_corner)
 
 	def _extract_eye_points(self, landmarks):
@@ -92,7 +99,7 @@ class Eye:
 
 	def _make_mask(self):
 		mask = np.ones((self.eye_region.shape[0], self.eye_region.shape[1]), np.uint8) * 255
-		cv2.fillConvexPoly(mask, (self.eye_points*self.scale).astype(int), 0)
+		cv2.fillConvexPoly(mask, (self.eye_points * self.scale).astype(int), 0)
 		mask = np.array(mask, dtype=int).astype('uint8')
 		mask = 255 - mask
 		# mask = cv2.resize(mask, (mask.shape[1]*SCALE, mask.shape[0]*SCALE), interpolation = cv2.INTER_CUBIC)
@@ -105,9 +112,10 @@ class Eye:
 		croped = self.frame[y - frame_padding:y + h + frame_padding, x:x + w].copy()
 		eye_origin = (x, y - frame_padding)
 		self.eye_points = self.eye_points - eye_origin
-		if SCALE ==2:
-			self.scale = (120/croped.shape[1])
-			croped = cv2.resize(croped, (int(croped.shape[1]*self.scale), int(croped.shape[0]*self.scale)), interpolation = cv2.INTER_CUBIC)
+		if SCALE == 2:
+			self.scale = (120 / croped.shape[1])
+			croped = cv2.resize(croped, (int(croped.shape[1] * self.scale), int(croped.shape[0] * self.scale)),
+			                    interpolation=cv2.INTER_CUBIC)
 		# print(croped.shape)
 		croped = cv2.bilateralFilter(croped, 15, 60, 60)
 

@@ -3,9 +3,14 @@ import itertools
 import cv2
 import dlib
 import numpy as np
-
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from sklearn.multioutput import MultiOutputRegressor
+import xgboost as xgb
+from train_models import train_xgb
 import face
 import time
+
 kernel = np.ones((3, 3), np.uint8)
 detector = dlib.get_frontal_face_detector()
 
@@ -20,7 +25,6 @@ def process_frame(frame):
     frame[int(eye_center[1]), int(eye_center[0])] = 255
     eye_center = face1.right_eye.center / face1.right_eye.scale + face1.right_eye.eye_origin
     frame[int(eye_center[1]), int(eye_center[0])] = 255
-    print(face1.left_eye.relative_center)
     return frame, face1
 
 
@@ -35,7 +39,7 @@ def video_demo(save_to, show):
         try:
             t = time.time()
             frame, _ = process_frame(frame)
-            print('time: ', time.time()-t)
+            print('time: ', time.time() - t)
         except:
             continue
 
@@ -85,8 +89,11 @@ def get_args():
 
     return parser.parse_args()
 
+
 DEBUG = 0
 SCALE = 2
+regressor = train_xgb()
+
 def main():
     args = get_args()
     print(args)
@@ -99,9 +106,15 @@ def main():
 
 
 if __name__ == '__main__':
+
     main()
 
 
 def gaze_api(frame):
     frame, face = process_frame(frame)
-    return face, frame
+    vector = np.concatenate((face.left_eye.relative_center, face.right_eye.relative_center,
+			                                           face.face_position[0].squeeze(),
+			                                           face.face_position[1].squeeze()))
+    result = regressor.predict(vector)
+    return result
+

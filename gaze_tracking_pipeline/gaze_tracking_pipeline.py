@@ -94,6 +94,7 @@ DEBUG = 0
 SCALE = 2
 regressor = train_xgb()
 
+
 def main():
     args = get_args()
     print(args)
@@ -106,15 +107,13 @@ def main():
 
 
 if __name__ == '__main__':
-
     main()
 
 
 def gaze_api(frame):
     frame, face = process_frame(frame)
     vector = np.concatenate((face.left_eye.relative_center, face.right_eye.relative_center,
-			                                           face.face_position[0].squeeze(),
-			                                           face.face_position[1].squeeze()))
+                             face.face_position[0].squeeze(),
+                             face.face_position[1].squeeze()))
     result = regressor.predict(vector)
     return result
-

@@ -4,6 +4,8 @@ import time
 import tkinter as tk
 import cv2
 
+from gaze_tracking_pipeline import gaze_api
+
 
 class FullScreenApp:
     def __init__(self, master, args):
@@ -58,6 +60,8 @@ class FullScreenApp:
 
     def infer_and_move(self, frame):
         self.random_move()  # TODO add inference here
+        result = gaze_api(frame)
+        print(result)
         # move the label by calling the following:
         # self.look_at_me.place(x=self.target_x, y=self.target_y, width=150, height=150)
 

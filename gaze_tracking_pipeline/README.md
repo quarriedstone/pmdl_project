@@ -23,3 +23,8 @@ Outputs:
   --output-cv2          Enables output using cv2.imshow() (default: False)
 
 ```
+
+# Docker commands
+*docker build -t gaze_tracking .*
+
+*docker run --name gaze_tracking gaze_tracking*
